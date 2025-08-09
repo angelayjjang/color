@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Color Selector</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
+      background-color: #f8f9fa;
+      margin: 0;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+    .color-section {
+      padding: 20px 20px 10px 20px;
+    }
+    .color-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 15px;
+      color: #333;
+    }
+    .colour-label {
+      color: #666;
+      font-weight: 500;
+    }
+    .selected-color-name {
+      color: #333;
+      font-weight: 600;
+    }
+    .color-category {
+      margin-bottom: 20px;
+    }
+    .color-category:last-child {
+      margin-bottom: 0;
+    }
+    .category-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: #666;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .color-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .color-group.horizontal-scroll {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: scroll;
+      overflow-y: hidden;
+      padding: 8px 0 16px 0;
+      width: 100%;
+      max-width: 100%;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+    }
+    .color-group.horizontal-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+    .color-group.horizontal-scroll::-webkit-scrollbar-track {
+      background: #f1f1f1;
+      border-radius: 3px;
+    }
+    .color-group.horizontal-scroll::-webkit-scrollbar-thumb {
+      background: #c1c1c1;
+      border-radius: 3px;
+    }
+    .color-group.horizontal-scroll::-webkit-scrollbar-thumb:hover {
+      background: #a8a8a8;
+    }
+    .color-group.horizontal-scroll .color-circle {
+      flex-shrink: 0;
+      margin-right: 12px;
+      margin-bottom: 0;
+    }
+    .color-group.horizontal-scroll .color-circle:last-child {
+      margin-right: 16px;
+    }
+    .color-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+    .color-circle:hover {
+      transform: scale(1.1);
+    }
+    .color-circle.selected {
+      border: 2px solid #333;
+      box-shadow: 0 0 0 2px white, 0 0 0 4px #333;
+    }
+    .color-circle[data-color="white"] {
+      border: 1px solid #ddd;
+      background: white;
+    }
+    .color-circle.pattern {
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.3) 2px, transparent 2px),
+        radial-gradient(circle at 75% 75%, rgba(0,0,0,0.1) 2px, transparent 2px);
+      background-size: 8px 8px;
+    }
+    .color-circle.pattern-leopard {
+      background-image: 
+        radial-gradient(ellipse 3px 2px at 20% 30%, rgba(139,69,19,0.8) 0%, transparent 50%),
+        radial-gradient(ellipse 2px 1px at 60% 70%, rgba(160,82,45,0.9) 0%, transparent 50%),
+        radial-gradient(ellipse 4px 3px at 80% 20%, rgba(101,67,33,0.7) 0%, transparent 50%),
+        radial-gradient(ellipse 2px 1px at 40% 80%, rgba(139,69,19,0.8) 0%, transparent 50%),
+        radial-gradient(ellipse 3px 2px at 90% 60%, rgba(160,82,45,0.9) 0%, transparent 50%);
+      background-size: 12px 12px;
+    }
+    .color-circle.pattern-denim {
+      background-image: 
+        repeating-linear-gradient(
+          45deg,
+          transparent,
+          transparent 2px,
+          rgba(255,255,255,0.1) 2px,
+          rgba(255,255,255,0.1) 4px
+        ),
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 1px,
+          rgba(0,0,0,0.05) 1px,
+          rgba(0,0,0,0.05) 3px
+        );
+      background-size: 6px 6px;
+    }
+    .color-circle.pattern-stripe {
+      background-image: 
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 3px,
+          rgba(255,255,255,0.2) 3px,
+          rgba(255,255,255,0.2) 6px
+        );
+      background-size: 6px 6px;
+    }
+    .color-circle.pattern-dot {
+      background-image: 
+        radial-gradient(circle at 25% 25%, rgba(255,255,255,0.4) 1px, transparent 1px),
+        radial-gradient(circle at 75% 75%, rgba(0,0,0,0.1) 1px, transparent 1px);
+      background-size: 4px 4px;
+    }
+    .color-circle.pattern-geometric {
+      background-image: 
+        linear-gradient(45deg, transparent 40%, rgba(255,255,255,0.3) 40%, rgba(255,255,255,0.3) 60%, transparent 60%),
+        linear-gradient(-45deg, transparent 40%, rgba(0,0,0,0.1) 40%, rgba(0,0,0,0.1) 60%, transparent 60%);
+      background-size: 8px 8px;
+    }
+    .color-circle.disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      position: relative;
+    }
+    .color-circle.disabled::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: #333;
+      transform: translate(-50%, -50%) rotate(45deg);
+    }
+    .color-circle.disabled::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 100%;
+      height: 2px;
+      background: #333;
+      transform: translate(-50%, -50%) rotate(-45deg);
+    }
+    .sort-buttons {
+      padding: 20px;
+      background-color: #f8f9fa;
+      border-top: 1px solid #eee;
+    }
+    .sort-buttons h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 16px;
+    }
+    .button-group {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+    .sort-btn {
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      background-color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 12px;
+      transition: all 0.2s ease;
+      min-width: 80px;
+      text-align: center;
+    }
+    .sort-btn:hover {
+      background-color: #f0f0f0;
+      border-color: #999;
+    }
+    .sort-btn.active {
+      background-color: #333;
+      color: white;
+      border-color: #333;
+    }
+    /* Screen-reader only */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    /* Layout selector */
+    .layout-options {
+      padding: 0;
+      background-color: transparent;
+    }
+    .layout-options .layout-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #333;
+    }
+    .layout-options select {
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      font-size: 13px;
+    }
+    /* Component tabs */
+    .component-tabs {
+      display: none;
+      padding: 8px 20px 0 20px;
+      background: #fff;
+    }
+    .component-tabs .tablist {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid #eee;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .component-tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 10px;
+      color: #666;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .component-tab-btn.active {
+      color: #333;
+      border-color: #333;
+    }
+    /* Tabs layout spacing tweaks */
+    .container.is-tabs-layout .color-section {
+      padding: 16px 20px 12px 20px;
+    }
+    .container.is-tabs-layout .component-tabs {
+      padding: 10px 20px 8px 20px;
+    }
+    .container.is-tabs-layout .component-tabs .tablist {
+      margin-bottom: 8px;
+    }
+    .container.is-tabs-layout .color-category {
+      margin-bottom: 16px;
+    }
+    .container.is-tabs-layout .color-group {
+      gap: 10px;
+      margin-bottom: 0;
+    }
+    /* Selection summary */
+    .selection-summary {
+      padding: 8px 20px;
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #333;
+    }
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+      font-size: 12px;
+      color: #333;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="color-section">
+      <div class="color-title">
+        <span class="colour-label">Colour</span> 
+        <span id="colorName" class="selected-color-name">Red Merlot</span>
+  </div>
+
+      <div id="componentTabs" class="component-tabs">
+        <div id="componentTablist" class="tablist"></div>
+      </div>
+
+      <div class="color-category">
+        <div class="category-label">Dark</div>
+        <div class="color-group" id="darkColors"></div>
+      </div>
+      
+      <div class="color-category">
+        <div class="category-label">Medium</div>
+        <div class="color-group" id="mediumColors"></div>
+      </div>
+      
+      <div class="color-category">
+        <div class="category-label">Light</div>
+        <div class="color-group" id="lightColors"></div>
+      </div>
+    </div>
+
+    <div class="sort-buttons">
+      <h3>Color Sorting Options</h3>
+      <div class="button-group">
+        <button class="sort-btn active" data-sort="default">As-is</button>
+        <button class="sort-btn" data-sort="dark-to-light">1. Dark to Light</button>
+        <button class="sort-btn" data-sort="personal-color">2. Personal Color</button>
+        <button class="sort-btn" data-sort="color-tone">3. Color Tone</button>
+        <button class="sort-btn" data-sort="tone-saturation">4. Tone & Saturation</button>
+        <button class="sort-btn" data-sort="season">5. Season</button>
+        <button class="sort-btn" data-sort="bestseller-new">6. Bestseller vs New</button>
+        <button class="sort-btn" data-sort="styling-purpose">7. Styling Purpose</button>
+        <button class="sort-btn" data-sort="natural-motif">8. Natural Motif</button>
+        <button class="sort-btn" data-sort="mood">9. Mood</button>
+      </div>
+    </div>
+
+    <div class="layout-options">
+      <div class="sort-buttons layout-controls">
+        <h3>Layout Options</h3>
+        <div class="button-group">
+          <button class="sort-btn layout-btn active" data-layout="open">Open</button>
+          <button class="sort-btn layout-btn" data-layout="tabs">Tabs</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="selection-summary">
+      <span class="summary-chip" id="summarySort">Sort: As-is</span>
+      <span class="summary-chip" id="summaryLayout">Layout: Open</span>
+    </div>
+  </div>
+
+  <script>
+    const colors = [
+      // Trending colors (2개)
+      { name: "Navy", hex: "#2d354d", group: "trending", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Gold", hex: "#d4a552", group: "trending", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      
+      // Other colors (18개) - 뉴츄럴 톤 포함
+      { name: "Ivory", hex: "#fffff0", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Sand Beige", hex: "#d5c4a1", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Taupe", hex: "#b9a89a", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Camel", hex: "#c19a6b", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Warm Gray", hex: "#b0a99f", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Stone Gray", hex: "#a49b90", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Sage Green", hex: "#b2ac88", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      { name: "Olive Green", hex: "#8b8c6a", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" },
+      { name: "Dusty Blue", hex: "#a3b5c3", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Black", hex: "#1f1b1a", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Red Merlot", hex: "#541c26", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Brown", hex: "#5c4033", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Charcoal", hex: "#444444", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Ash", hex: "#6c6d6d", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Chocolate", hex: "#4e342e", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Garnet", hex: "#5c1d1d", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Steel Blue", hex: "#3b4d61", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Blue", hex: "#0083c3", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Lavender", hex: "#b7a6d2", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      { name: "Green", hex: "#4e8d53", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Teal", hex: "#68a7a7", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Crimson", hex: "#b1221c", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      { name: "Plum", hex: "#734f7e", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" },
+      { name: "Rose", hex: "#dbc0c4", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      { name: "Cream", hex: "#f2f0e6", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "Pearl", hex: "#f5f5f5", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      { name: "Silver", hex: "#e2e2e2", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32384" },
+      { name: "White", hex: "#ffffff", group: "other", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" },
+      
+      // Pattern colors (10개)
+      { name: "Navy Pattern", hex: "#2d354d", group: "pattern", pattern: true, patternType: "leopard", imageUrl: "https://images.lululemon.com/is/image/lululemon/32386" },
+      { name: "Gold Pattern", hex: "#d4a552", group: "pattern", pattern: true, patternType: "denim", imageUrl: "https://images.lululemon.com/is/image/lululemon/32387" },
+      { name: "Ivory Pattern", hex: "#fffff0", group: "pattern", pattern: true, patternType: "stripe", imageUrl: "https://images.lululemon.com/is/image/lululemon/32388" },
+      { name: "Black Pattern", hex: "#1f1b1a", group: "pattern", pattern: true, patternType: "dot", imageUrl: "https://images.lululemon.com/is/image/lululemon/32389" },
+      { name: "Red Merlot Pattern", hex: "#541c26", group: "pattern", pattern: true, patternType: "geometric", imageUrl: "https://images.lululemon.com/is/image/lululemon/32390" },
+      { name: "Blue Pattern", hex: "#0083c3", group: "pattern", pattern: true, patternType: "denim", imageUrl: "https://images.lululemon.com/is/image/lululemon/32391" },
+      { name: "Lavender Pattern", hex: "#b7a6d2", group: "pattern", pattern: true, patternType: "stripe", imageUrl: "https://images.lululemon.com/is/image/lululemon/32392" },
+      { name: "Green Pattern", hex: "#4e8d53", group: "pattern", pattern: true, patternType: "dot", imageUrl: "https://images.lululemon.com/is/image/lululemon/32393" },
+      { name: "Crimson Pattern", hex: "#b1221c", group: "pattern", pattern: true, patternType: "leopard", imageUrl: "https://images.lululemon.com/is/image/lululemon/32394" },
+      { name: "Rose Pattern", hex: "#dbc0c4", group: "pattern", pattern: true, patternType: "geometric", imageUrl: "https://images.lululemon.com/is/image/lululemon/32395" }
+    ];
+
+    // 각 정렬 옵션별 색상 배열
+    const darkToLightColors = [
+      // Dark colors (10개)
+      { name: "Black", hex: "#1f1b1a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Plum", hex: "#734f7e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" },
+      { name: "Olive Green", hex: "#8b8c6a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" },
+      
+      // Medium colors (10개)
+      { name: "Ash", hex: "#6c6d6d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Green", hex: "#4e8d53", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      
+      // Light colors (10개)
+      { name: "Gold", hex: "#d4a552", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      { name: "Sand Beige", hex: "#d5c4a1", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      { name: "Rose", hex: "#dbc0c4", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "Silver", hex: "#e2e2e2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32384" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" }
+    ];
+
+    const personalColorColors = [
+      // Warm Tone (10개)
+      { name: "Gold", hex: "#d4a552", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Sand Beige", hex: "#d5c4a1", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      
+      // Cool Tone (10개)
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Green", hex: "#4e8d53", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      { name: "Olive Green", hex: "#8b8c6a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      
+      // Neutral Tone (10개)
+      { name: "Black", hex: "#1f1b1a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Ash", hex: "#6c6d6d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      { name: "Silver", hex: "#e2e2e2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32384" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" }
+    ];
+
+    const colorToneColors = [
+      // Bright (10개)
+      { name: "Gold", hex: "#d4a552", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Green", hex: "#4e8d53", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      { name: "Rose", hex: "#dbc0c4", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      
+      // Pastel (10개)
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      { name: "Silver", hex: "#e2e2e2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32384" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Sand Beige", hex: "#d5c4a1", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      
+      // Natural (10개)
+      { name: "Black", hex: "#1f1b1a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Ash", hex: "#6c6d6d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Plum", hex: "#734f7e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" },
+      { name: "Olive Green", hex: "#8b8c6a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" }
+    ];
+
+    // 추가 그룹핑 옵션들
+    const toneSaturationColors = [
+      // Light Tone (10개)
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" },
+      { name: "Silver", hex: "#e2e2e2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32384" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Sand Beige", hex: "#d5c4a1", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Rose", hex: "#dbc0c4", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      
+      // Middle Tone (10개)
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      { name: "Olive Green", hex: "#8b8c6a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Green", hex: "#4e8d53", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      
+      // Deep Tone (10개)
+      { name: "Black", hex: "#1f1b1a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      { name: "Plum", hex: "#734f7e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" }
+    ];
+
+    const seasonColors = [
+      // Spring/Summer (10개)
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      { name: "Rose", hex: "#dbc0c4", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      
+      // Fall/Winter (10개)
+      { name: "Black", hex: "#1f1b1a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      { name: "Plum", hex: "#734f7e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" },
+      
+      // All Season (10개)
+      { name: "Gold", hex: "#d4a552", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Sand Beige", hex: "#d5c4a1", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Ash", hex: "#6c6d6d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      { name: "Silver", hex: "#e2e2e2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32384" }
+    ];
+
+    const bestsellerNewColors = [
+      // Steady Seller (10개)
+      { name: "Black", hex: "#1f1b1a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Ash", hex: "#6c6d6d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      
+      // New Season (10개)
+      { name: "Gold", hex: "#d4a552", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      { name: "Rose", hex: "#dbc0c4", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Plum", hex: "#734f7e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" },
+      
+      // Limited Edition (10개)
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Sand Beige", hex: "#d5c4a1", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Green", hex: "#4e8d53", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Olive Green", hex: "#8b8c6a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" }
+    ];
+
+    const stylingPurposeColors = [
+      // Base Color (10개)
+      { name: "Black", hex: "#1f1b1a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Ash", hex: "#6c6d6d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      
+      // Point Color (10개)
+      { name: "Gold", hex: "#d4a552", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      { name: "Rose", hex: "#dbc0c4", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Green", hex: "#4e8d53", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Plum", hex: "#734f7e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" },
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      
+      // Mix & Match (10개)
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Sand Beige", hex: "#d5c4a1", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Olive Green", hex: "#8b8c6a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" }
+    ];
+
+    const naturalMotifColors = [
+      // Earthy (10개)
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Sand Beige", hex: "#d5c4a1", imageUrl: "https://images.lululemon.com/is/image/lululemon/32358" },
+      { name: "Oatmeal Beige", hex: "#e6d8c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32357" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Gold", hex: "#d4a552", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      { name: "Olive Green", hex: "#8b8c6a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" },
+      
+      // Ocean (10개)
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Ash", hex: "#6c6d6d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      { name: "Silver", hex: "#e2e2e2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32384" },
+      
+      // Flora (10개)
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      { name: "Rose", hex: "#dbc0c4", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      { name: "Green", hex: "#4e8d53", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Plum", hex: "#734f7e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" },
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" }
+    ];
+
+    const moodColors = [
+      // Energetic (10개)
+      { name: "Gold", hex: "#d4a552", imageUrl: "https://images.lululemon.com/is/image/lululemon/32355" },
+      { name: "Crimson", hex: "#b1221c", imageUrl: "https://images.lululemon.com/is/image/lululemon/32379" },
+      { name: "Red Merlot", hex: "#541c26", imageUrl: "https://images.lululemon.com/is/image/lululemon/32368" },
+      { name: "Garnet", hex: "#5c1d1d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32373" },
+      { name: "Blue", hex: "#0083c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32375" },
+      { name: "Green", hex: "#4e8d53", imageUrl: "https://images.lululemon.com/is/image/lululemon/32377" },
+      { name: "Teal", hex: "#68a7a7", imageUrl: "https://images.lululemon.com/is/image/lululemon/32378" },
+      { name: "Lavender", hex: "#b7a6d2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32376" },
+      { name: "Rose", hex: "#dbc0c4", imageUrl: "https://images.lululemon.com/is/image/lululemon/32381" },
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      
+      // Calm & Reset (10개)
+      { name: "Sage Green", hex: "#b2ac88", imageUrl: "https://images.lululemon.com/is/image/lululemon/32363" },
+      { name: "Taupe", hex: "#b9a89a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32359" },
+      { name: "Dusty Blue", hex: "#a3b5c3", imageUrl: "https://images.lululemon.com/is/image/lululemon/32365" },
+      { name: "Sky Gray Blue", hex: "#bccad6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32366" },
+      { name: "Warm Gray", hex: "#b0a99f", imageUrl: "https://images.lululemon.com/is/image/lululemon/32361" },
+      { name: "Stone Gray", hex: "#a49b90", imageUrl: "https://images.lululemon.com/is/image/lululemon/32362" },
+      { name: "Ash", hex: "#6c6d6d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32371" },
+      { name: "Ivory", hex: "#fffff0", imageUrl: "https://images.lululemon.com/is/image/lululemon/32356" },
+      { name: "Cream", hex: "#f2f0e6", imageUrl: "https://images.lululemon.com/is/image/lululemon/32382" },
+      { name: "Pearl", hex: "#f5f5f5", imageUrl: "https://images.lululemon.com/is/image/lululemon/32383" },
+      
+      // Premium & Luxury (10개)
+      { name: "Black", hex: "#1f1b1a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32367" },
+      { name: "Charcoal", hex: "#444444", imageUrl: "https://images.lululemon.com/is/image/lululemon/32370" },
+      { name: "Navy", hex: "#2d354d", imageUrl: "https://images.lululemon.com/is/image/lululemon/32354" },
+      { name: "Steel Blue", hex: "#3b4d61", imageUrl: "https://images.lululemon.com/is/image/lululemon/32374" },
+      { name: "Camel", hex: "#c19a6b", imageUrl: "https://images.lululemon.com/is/image/lululemon/32360" },
+      { name: "Brown", hex: "#5c4033", imageUrl: "https://images.lululemon.com/is/image/lululemon/32369" },
+      { name: "Chocolate", hex: "#4e342e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32372" },
+      { name: "Olive Green", hex: "#8b8c6a", imageUrl: "https://images.lululemon.com/is/image/lululemon/32364" },
+      { name: "Plum", hex: "#734f7e", imageUrl: "https://images.lululemon.com/is/image/lululemon/32380" },
+      { name: "Silver", hex: "#e2e2e2", imageUrl: "https://images.lululemon.com/is/image/lululemon/32384" },
+      { name: "White", hex: "#ffffff", imageUrl: "https://images.lululemon.com/is/image/lululemon/32385" }
+    ];
+
+    let currentSort = 'default';
+    let componentLayout = 'open';
+    let activeComponentTabIndex = 0;
+    let tabIndexBySort = {};
+
+    // 자동으로 색상 속성 계산하는 함수들
+    function normalizeHex(input) {
+      if (!input) return null;
+      let hex = String(input).trim();
+      if (!hex.startsWith('#')) hex = `#${hex}`;
+      // Remove non-hex chars
+      hex = `#${hex.replace(/^#/, '').replace(/[^a-fA-F0-9]/g, '')}`;
+      const body = hex.slice(1);
+      if (body.length === 3) {
+        // #RGB -> #RRGGBB
+        const r = body[0], g = body[1], b = body[2];
+        return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+      }
+      if (body.length === 4) {
+        // #RGBA -> #RRGGBB (drop alpha)
+        const r = body[0], g = body[1], b = body[2];
+        return `#${r}${r}${g}${g}${b}${b}`.toLowerCase();
+      }
+      if (body.length === 8) {
+        // #RRGGBBAA -> #RRGGBB (drop alpha)
+        return `#${body.slice(0, 6)}`.toLowerCase();
+      }
+      if (body.length === 6) {
+        return `#${body}`.toLowerCase();
+      }
+      // Unsupported lengths -> null
+      return null;
+    }
+
+    function hexToRgb(hex) {
+      const norm = normalizeHex(hex);
+      if (!norm) return null;
+      const result = /^#([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(norm);
+      return result ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16)
+      } : null;
+    }
+
+    // BT.709 표준에 따른 휘도 계산 (엑셀 데이터 기반)
+    function calculateBT709Luminance(hex) {
+      const rgb = hexToRgb(hex);
+      if (!rgb) return 0;
+      // BT.709 공식: Y = 0.2126*R + 0.7152*G + 0.0722*B
+      return (0.2126 * rgb.r + 0.7152 * rgb.g + 0.0722 * rgb.b) / 255;
+    }
+
+    // ITU BT.601 표준에 따른 휘도 계산
+    function calculateBT601Luminance(hex) {
+      const rgb = hexToRgb(hex);
+      if (!rgb) return 0;
+      // BT.601 공식: Y = 0.299*R + 0.587*G + 0.114*B
+      return (0.299 * rgb.r + 0.587 * rgb.g + 0.114 * rgb.b) / 255;
+    }
+
+    // 엑셀 데이터 기반 밝기 계산 (BT.709 사용)
+    function calculateBrightness(hex) {
+      return calculateBT709Luminance(hex);
+    }
+
+    function calculatePersonalColor(hex) {
+      const rgb = hexToRgb(hex);
+      if (!rgb) return 'neutral';
+      
+      const { h, s, v } = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      
+      // 채도가 낮으면 뉴츄럴 (회색조)
+      if (s < 0.2) return 'neutral';
+      
+      // 스킨 톤에 따른 색상 분류
+      // Warm Tone: 따뜻한 색조 (빨강, 주황, 노랑, 따뜻한 갈색)
+      // Cool Tone: 차가운 색조 (파랑, 보라, 차가운 녹색)
+      // Neutral Tone: 중성 색조 (회색, 베이지, 크림)
+      
+      if (h >= 0 && h < 60) return 'warm';      // 빨강-주황
+      else if (h >= 60 && h < 120) return 'warm';   // 주황-노랑
+      else if (h >= 120 && h < 180) return 'cool';  // 노랑-초록
+      else if (h >= 180 && h < 240) return 'cool';  // 초록-파랑
+      else if (h >= 240 && h < 300) return 'cool';  // 파랑-보라
+      else if (h >= 300 && h < 360) return 'warm';  // 보라-빨강
+      else return 'neutral';
+    }
+
+    function rgbToHsv(r, g, b) {
+      r /= 255;
+      g /= 255;
+      b /= 255;
+      
+      const max = Math.max(r, g, b);
+      const min = Math.min(r, g, b);
+      const diff = max - min;
+      
+      let h = 0;
+      const s = max === 0 ? 0 : diff / max;
+      const v = max;
+      
+      if (diff !== 0) {
+        switch (max) {
+          case r:
+            h = ((g - b) / diff) % 6;
+            break;
+          case g:
+            h = (b - r) / diff + 2;
+            break;
+          case b:
+            h = (r - g) / diff + 4;
+            break;
+        }
+        h *= 60;
+        if (h < 0) h += 360;
+      }
+      
+      return { h, s, v };
+    }
+
+    function calculateTone(hex) {
+      const rgb = hexToRgb(hex);
+      if (!rgb) return 'natural';
+      
+      const { h, s, v } = rgbToHsv(rgb.r, rgb.g, rgb.b);
+      
+      // 밝기가 높고 채도가 낮으면 파스텔
+      if (v > 0.7 && s < 0.5) return 'pastel';
+      
+      // 밝기가 높고 채도가 높으면 밝은색
+      if (v > 0.6 && s > 0.5) return 'bright';
+      
+      // 밝기가 낮으면 깊은색
+      if (v < 0.4) return 'deep';
+      
+      // 뉴츄럴: PRD 정의에 따른 베이지, 그레이, 브라운 계열
+      // 채도가 낮고 중성적인 색상들
+      if (s < 0.25) return 'natural';
+      
+      // 중간 밝기와 중간 채도의 중성 색상들 (베이지, 그레이, 브라운)
+      if (v >= 0.4 && v <= 0.7 && s < 0.35) return 'natural';
+      
+      // 그 외는 뉴츄럴
+      return 'natural';
+    }
+
+    function getColorTone(color) {
+      // PRD에 정의된 뉴츄럴 색상들을 명시적으로 분류
+      const neutralColors = [
+        'Ivory', 'Oatmeal Beige', 'Sand Beige', 'Taupe', 'Camel', 
+        'Warm Gray', 'Stone Gray', 'Sage Green', 'Olive Green', 
+        'Dusty Blue', 'Sky Gray Blue', 'Cream', 'Pearl', 'Silver'
+      ];
+      
+      if (neutralColors.includes(color.name)) {
+        return 'natural';
+      }
+      
+      return calculateTone(color.hex);
+    }
+
+    function getColorCategory(brightness) {
+      if (brightness < 0.3) return 'dark';
+      if (brightness < 0.7) return 'medium';
+      return 'light';
+    }
+
+    function enhanceColorData(color) {
+      const hex = normalizeHex(color.hex);
+      const brightness = calculateBrightness(hex);
+      const bt709Lum = calculateBT709Luminance(hex);
+      const bt601Lum = calculateBT601Luminance(hex);
+      
+      return {
+        ...color,
+        hex: hex,
+        brightness: brightness,
+        bt709Luminance: bt709Lum,
+        bt601Luminance: bt601Lum,
+        personalColor: calculatePersonalColor(hex),
+        tone: getColorTone(color),
+        category: getColorCategory(brightness)
+      };
+    }
+
+    const enhancedColors = colors.map(enhanceColorData);
+
+    function createColorCircle(color) {
+      const div = document.createElement("div");
+      div.className = "color-circle";
+      div.style.backgroundColor = color.hex;
+      div.title = color.name;
+      
+      if (color.name === "White") {
+        div.setAttribute('data-color', 'white');
+      }
+      
+      if (color.pattern) {
+        div.classList.add('pattern');
+        if (color.patternType === "leopard") {
+          div.classList.add('pattern-leopard');
+        } else if (color.patternType === "denim") {
+          div.classList.add('pattern-denim');
+        } else if (color.patternType === "stripe") {
+          div.classList.add('pattern-stripe');
+        } else if (color.patternType === "dot") {
+          div.classList.add('pattern-dot');
+        } else if (color.patternType === "geometric") {
+          div.classList.add('pattern-geometric');
+        }
+      }
+      
+      div.addEventListener("click", () => {
+        if (!div.classList.contains('disabled')) {
+        document.querySelectorAll(".color-circle").forEach(c => c.classList.remove("selected"));
+        div.classList.add("selected");
+        document.getElementById("colorName").textContent = color.name;
+        }
+      });
+      
+      if (color.name === "Red Merlot") div.classList.add("selected");
+      return div;
+    }
+
+    function sortColors(sortType) {
+      let sortedColors = [...enhancedColors];
+      
+      switch(sortType) {
+        case 'dark-to-light':
+          return darkToLightColors.map(enhanceColorData);
+        case 'personal-color':
+          return personalColorColors.map(enhanceColorData);
+        case 'color-tone':
+          return colorToneColors.map(enhanceColorData);
+        case 'tone-saturation':
+          return toneSaturationColors.map(enhanceColorData);
+        case 'season':
+          return seasonColors.map(enhanceColorData);
+        case 'bestseller-new':
+          return bestsellerNewColors.map(enhanceColorData);
+        case 'styling-purpose':
+          return stylingPurposeColors.map(enhanceColorData);
+        case 'natural-motif':
+          return naturalMotifColors.map(enhanceColorData);
+        case 'mood':
+          return moodColors.map(enhanceColorData);
+        default:
+          // Default sorting: trending first, then others, then patterns
+          sortedColors.sort((a, b) => {
+            if (a.group !== b.group) {
+              if (a.group === 'trending') return -1;
+              if (b.group === 'trending') return 1;
+              if (a.group === 'pattern') return 1;
+              if (b.group === 'pattern') return -1;
+              return 0;
+            }
+            return enhancedColors.indexOf(a) - enhancedColors.indexOf(b);
+          });
+      }
+      
+      return sortedColors;
+    }
+
+    function renderColors(sortType) {
+      const sortedColors = sortColors(sortType);
+      
+      // Clear existing colors
+      document.getElementById("darkColors").innerHTML = '';
+      document.getElementById("mediumColors").innerHTML = '';
+      document.getElementById("lightColors").innerHTML = '';
+      const layoutOptionsEl = document.querySelector('.layout-options');
+      const containerEl = document.querySelector('.container');
+      
+      if (sortType === 'default') {
+        // Hide layout options for As-is
+        if (layoutOptionsEl) layoutOptionsEl.style.display = 'none';
+        if (containerEl) containerEl.classList.remove('is-tabs-layout');
+        // Show all colors in one row without sections
+        document.getElementById("mediumColors").style.display = 'none';
+        document.getElementById("lightColors").style.display = 'none';
+        
+        // Hide category labels
+        document.querySelectorAll('.category-label').forEach(label => {
+          label.style.display = 'none';
+        });
+        
+        // Add horizontal scroll class to the container
+        const darkContainer = document.getElementById("darkColors");
+        darkContainer.classList.add('horizontal-scroll');
+        darkContainer.style.marginBottom = '0';
+        
+        // Add all colors to dark section (which will be the only visible section)
+        sortedColors.forEach(color => {
+          const colorCircle = createColorCircle(color);
+          
+          // Add disabled state for some colors (like in the image)
+          if (color.name === "Charcoal" || color.name === "Ash" || color.name === "Silver" || 
+              color.name === "Navy Pattern" || color.name === "Gold Pattern") {
+            colorCircle.classList.add('disabled');
+          }
+          
+          darkContainer.appendChild(colorCircle);
+        });
+        // As-is: no tabs UI even in tabs layout
+        document.getElementById('componentTabs').style.display = 'none';
+      } else {
+        // Show layout options for 1~9 and sync state
+        if (layoutOptionsEl) layoutOptionsEl.style.display = 'block';
+        applyTabsLayoutClass();
+        updateLayoutButtons(componentLayout);
+        // Show all categories for other sort types
+        document.getElementById("mediumColors").style.display = 'flex';
+        document.getElementById("lightColors").style.display = 'flex';
+        
+        // Remove horizontal scroll class from all containers
+        document.querySelectorAll('.color-group').forEach(container => {
+          container.classList.remove('horizontal-scroll');
+        });
+        
+        // Show category labels
+        document.querySelectorAll('.category-label').forEach(label => {
+          label.style.display = 'block';
+        });
+        
+        // Distribute colors into three categories based on sort type
+        const category1 = sortedColors.slice(0, 10);
+        const category2 = sortedColors.slice(10, 20);
+        const category3 = sortedColors.slice(20, 30);
+        
+        // Update category labels based on sort type
+        const labels = document.querySelectorAll('.category-label');
+        
+        switch(sortType) {
+          case 'dark-to-light':
+            labels[0].textContent = 'Dark';
+            labels[1].textContent = 'Medium';
+            labels[2].textContent = 'Light';
+            break;
+          case 'personal-color':
+            labels[0].textContent = 'Warm Tone';
+            labels[1].textContent = 'Cool Tone';
+            labels[2].textContent = 'Neutral Tone';
+            break;
+          case 'color-tone':
+            labels[0].textContent = 'Bright';
+            labels[1].textContent = 'Pastel';
+            labels[2].textContent = 'Natural';
+            break;
+          case 'tone-saturation':
+            labels[0].textContent = 'Light Tone';
+            labels[1].textContent = 'Middle Tone';
+            labels[2].textContent = 'Deep Tone';
+            break;
+          case 'season':
+            labels[0].textContent = 'Spring/Summer';
+            labels[1].textContent = 'Fall/Winter';
+            labels[2].textContent = 'All Season';
+            break;
+          case 'bestseller-new':
+            labels[0].textContent = 'Steady Seller';
+            labels[1].textContent = 'New Season';
+            labels[2].textContent = 'Limited Edition';
+            break;
+          case 'styling-purpose':
+            labels[0].textContent = 'Base Color';
+            labels[1].textContent = 'Point Color';
+            labels[2].textContent = 'Mix & Match';
+            break;
+          case 'natural-motif':
+            labels[0].textContent = 'Earthy';
+            labels[1].textContent = 'Ocean';
+            labels[2].textContent = 'Flora';
+            break;
+          case 'mood':
+            labels[0].textContent = 'Energetic';
+            labels[1].textContent = 'Calm & Reset';
+            labels[2].textContent = 'Premium & Luxury';
+            break;
+        }
+        
+        // Add colors to respective containers
+        category1.forEach(color => {
+          document.getElementById("darkColors").appendChild(createColorCircle(color));
+        });
+        category2.forEach(color => {
+          document.getElementById("mediumColors").appendChild(createColorCircle(color));
+        });
+        category3.forEach(color => {
+          document.getElementById("lightColors").appendChild(createColorCircle(color));
+        });
+        // If tabs layout, build tabs and show only selected category
+        if (componentLayout === 'tabs') {
+          let tabLabels = [];
+          // restore last tab index for this sort if available
+          const saved = tabIndexBySort[sortType];
+          activeComponentTabIndex = typeof saved === 'number' ? saved : 0;
+          if (sortType === 'dark-to-light') tabLabels = ['Dark', 'Medium', 'Light'];
+          else if (sortType === 'personal-color') tabLabels = ['Warm Tone', 'Cool Tone', 'Neutral Tone'];
+          else if (sortType === 'color-tone') tabLabels = ['Bright', 'Pastel', 'Natural'];
+          else if (sortType === 'tone-saturation') tabLabels = ['Light Tone', 'Middle Tone', 'Deep Tone'];
+          else if (sortType === 'season') tabLabels = ['Spring/Summer', 'Fall/Winter', 'All Season'];
+          else if (sortType === 'bestseller-new') tabLabels = ['Steady Seller', 'New Season', 'Limited Edition'];
+          else if (sortType === 'styling-purpose') tabLabels = ['Base Color', 'Point Color', 'Mix & Match'];
+          else if (sortType === 'natural-motif') tabLabels = ['Earthy', 'Ocean', 'Flora'];
+          else if (sortType === 'mood') tabLabels = ['Energetic', 'Calm & Reset', 'Premium & Luxury'];
+          buildComponentTabs(tabLabels);
+          updateComponentTabsVisibility();
+        } else {
+          document.getElementById('componentTabs').style.display = 'none';
+        }
+      }
+    }
+
+    function updateButtonStates(activeSort) {
+      document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
+        btn.classList.remove('active');
+      });
+      document.querySelectorAll(`.sort-btn[data-sort="${activeSort}"]`).forEach(btn => {
+        btn.classList.add('active');
+      });
+    }
+
+    function resetCategoryLabels() {
+      const labels = document.querySelectorAll('.category-label');
+      labels[0].textContent = 'Dark';
+      labels[1].textContent = 'Medium';
+      labels[2].textContent = 'Light';
+    }
+
+    function buildComponentTabs(tabLabels) {
+      const tabs = document.getElementById('componentTabs');
+      const tablist = document.getElementById('componentTablist');
+      if (!tabs || !tablist) return;
+      tablist.innerHTML = '';
+      activeComponentTabIndex = Math.min(activeComponentTabIndex, Math.max(0, tabLabels.length - 1));
+      tabLabels.forEach((label, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'component-tab-btn' + (index === activeComponentTabIndex ? ' active' : '');
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          activeComponentTabIndex = index;
+          tabIndexBySort[currentSort] = index;
+          updateComponentTabsVisibility();
+        });
+        tablist.appendChild(btn);
+      });
+      tabs.style.display = 'block';
+      // hide inline category labels in tabs mode
+      document.querySelectorAll('.category-label').forEach(label => {
+        label.style.display = 'none';
+      });
+    }
+
+    function updateComponentTabsVisibility() {
+      const btns = document.querySelectorAll('.component-tab-btn');
+      btns.forEach((b, i) => b.classList.toggle('active', i === activeComponentTabIndex));
+      const groups = [
+        document.getElementById('darkColors'),
+        document.getElementById('mediumColors'),
+        document.getElementById('lightColors')
+      ];
+      groups.forEach((g, i) => {
+        if (!g) return;
+        g.classList.remove('horizontal-scroll');
+        g.style.display = (i === activeComponentTabIndex ? 'flex' : 'none');
+      });
+    }
+
+    function applyTabsLayoutClass() {
+      const container = document.querySelector('.container');
+      if (!container) return;
+      container.classList.toggle('is-tabs-layout', componentLayout === 'tabs');
+    }
+
+    // Initialize
+    renderColors('default');
+
+    // Add event listeners to sort buttons
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const sortType = btn.getAttribute('data-sort');
+        currentSort = sortType;
+        if (componentLayout === 'tabs') {
+          const saved = tabIndexBySort[sortType];
+          activeComponentTabIndex = typeof saved === 'number' ? saved : 0;
+        }
+        
+        updateButtonStates(sortType);
+        
+        if (sortType === 'default') {
+          resetCategoryLabels();
+        }
+        
+        renderColors(sortType);
+      });
+    });
+
+    // Layout mode toggle (buttons)
+    function updateLayoutButtons(layout) {
+      document.querySelectorAll('.layout-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-layout') === layout);
+      });
+    }
+    document.querySelectorAll('.layout-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const layout = btn.getAttribute('data-layout');
+        if (!layout || layout === componentLayout) return;
+        componentLayout = layout;
+        if (componentLayout === 'tabs') {
+          const saved = tabIndexBySort[currentSort];
+          activeComponentTabIndex = typeof saved === 'number' ? saved : 0;
+        }
+        updateLayoutButtons(componentLayout);
+        applyTabsLayoutClass();
+        renderColors(currentSort);
+        // Re-apply sort active state to avoid any visual reset
+        updateButtonStates(currentSort);
+        updateSelectionSummary();
+      });
+    });
+    // initialize layout buttons
+    updateLayoutButtons(componentLayout);
+    applyTabsLayoutClass();
+    updateSelectionSummary();
+  </script>
+</body>
+</html>

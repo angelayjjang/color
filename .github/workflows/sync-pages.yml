@@ -1,0 +1,28 @@
+name: Sync Pages
+
+on:
+  push:
+    branches: [ main ]
+
+permissions:
+  contents: write
+
+jobs:
+  sync-docs:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Ensure docs directory
+        run: |
+          mkdir -p docs
+      - name: Sync color-selector to docs/index
+        run: |
+          cp -f color-selector.html docs/index.html
+      - name: Commit changes if any
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "ci: sync docs/index.html from color-selector.html"
+          file_pattern: docs/index.html
