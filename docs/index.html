@@ -358,16 +358,16 @@
     <div class="sort-buttons">
       <h3>Color Sorting Options</h3>
       <div class="button-group">
-        <button type="button" class="sort-btn active" data-sort="default">As-is</button>
-        <button type="button" class="sort-btn" data-sort="dark-to-light">1. Dark to Light</button>
-        <button type="button" class="sort-btn" data-sort="personal-color">2. Personal Color</button>
-        <button type="button" class="sort-btn" data-sort="color-tone">3. Color Tone</button>
-        <button type="button" class="sort-btn" data-sort="tone-saturation">4. Tone & Saturation</button>
-        <button type="button" class="sort-btn" data-sort="season">5. Season</button>
-        <button type="button" class="sort-btn" data-sort="bestseller-new">6. Bestseller vs New</button>
-        <button type="button" class="sort-btn" data-sort="styling-purpose">7. Styling Purpose</button>
-        <button type="button" class="sort-btn" data-sort="natural-motif">8. Natural Motif</button>
-        <button type="button" class="sort-btn" data-sort="mood">9. Mood</button>
+        <button class="sort-btn active" data-sort="default">As-is</button>
+        <button class="sort-btn" data-sort="dark-to-light">1. Dark to Light</button>
+        <button class="sort-btn" data-sort="personal-color">2. Personal Color</button>
+        <button class="sort-btn" data-sort="color-tone">3. Color Tone</button>
+        <button class="sort-btn" data-sort="tone-saturation">4. Tone & Saturation</button>
+        <button class="sort-btn" data-sort="season">5. Season</button>
+        <button class="sort-btn" data-sort="bestseller-new">6. Bestseller vs New</button>
+        <button class="sort-btn" data-sort="styling-purpose">7. Styling Purpose</button>
+        <button class="sort-btn" data-sort="natural-motif">8. Natural Motif</button>
+        <button class="sort-btn" data-sort="mood">9. Mood</button>
       </div>
     </div>
 
@@ -375,8 +375,8 @@
       <div class="sort-buttons layout-controls">
         <h3>Layout Options</h3>
         <div class="button-group">
-          <button type="button" class="sort-btn layout-btn active" data-layout="open">Open</button>
-          <button type="button" class="sort-btn layout-btn" data-layout="tabs">Tabs</button>
+          <button class="sort-btn layout-btn active" data-layout="open">Open</button>
+          <button class="sort-btn layout-btn" data-layout="tabs">Tabs</button>
         </div>
       </div>
     </div>
@@ -1081,8 +1081,6 @@
         const darkContainer = document.getElementById("darkColors");
         darkContainer.classList.add('horizontal-scroll');
         darkContainer.style.marginBottom = '0';
-        // Ensure visible even if tabs previously hid it
-        darkContainer.style.display = 'flex';
         
         // Add all colors to dark section (which will be the only visible section)
         sortedColors.forEach(color => {
@@ -1271,8 +1269,8 @@
     // Initialize
     renderColors('default');
 
-    // Add event listeners to sort buttons (only those with data-sort)
-    document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
+    // Add event listeners to sort buttons
+    document.querySelectorAll('.sort-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const sortType = btn.getAttribute('data-sort');
         currentSort = sortType;
@@ -1318,30 +1316,6 @@
     updateLayoutButtons(componentLayout);
     applyTabsLayoutClass();
     updateSelectionSummary();
-
-    // Selection summary helpers
-    function getSortLabel(sortType) {
-      switch (sortType) {
-        case 'default': return 'As-is';
-        case 'dark-to-light': return '1. Dark to Light';
-        case 'personal-color': return '2. Personal Color';
-        case 'color-tone': return '3. Color Tone';
-        case 'tone-saturation': return '4. Tone & Saturation';
-        case 'season': return '5. Season';
-        case 'bestseller-new': return '6. Bestseller vs New';
-        case 'styling-purpose': return '7. Styling Purpose';
-        case 'natural-motif': return '8. Natural Motif';
-        case 'mood': return '9. Mood';
-        default: return 'As-is';
-      }
-    }
-    function getLayoutLabel(layout) { return layout === 'tabs' ? 'Tabs' : 'Open'; }
-    function updateSelectionSummary() {
-      const sortEl = document.getElementById('summarySort');
-      const layoutEl = document.getElementById('summaryLayout');
-      if (sortEl) sortEl.textContent = `Sort: ${getSortLabel(currentSort)}`;
-      if (layoutEl) layoutEl.textContent = `Layout: ${getLayoutLabel(componentLayout)}`;
-    }
   </script>
 </body>
 </html>
