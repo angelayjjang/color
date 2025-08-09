@@ -228,6 +228,103 @@
       color: white;
       border-color: #333;
     }
+    /* Screen-reader only */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+    /* Layout selector */
+    .layout-options {
+      padding: 0;
+      background-color: transparent;
+    }
+    .layout-options .layout-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: #333;
+    }
+    .layout-options select {
+      padding: 6px 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      background: #fff;
+      font-size: 13px;
+    }
+    /* Component tabs */
+    .component-tabs {
+      display: none;
+      padding: 8px 20px 0 20px;
+      background: #fff;
+    }
+    .component-tabs .tablist {
+      display: flex;
+      gap: 8px;
+      border-bottom: 1px solid #eee;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .component-tab-btn {
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      padding: 8px 10px;
+      color: #666;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    .component-tab-btn.active {
+      color: #333;
+      border-color: #333;
+    }
+    /* Tabs layout spacing tweaks */
+    .container.is-tabs-layout .color-section {
+      padding: 16px 20px 12px 20px;
+    }
+    .container.is-tabs-layout .component-tabs {
+      padding: 10px 20px 8px 20px;
+    }
+    .container.is-tabs-layout .component-tabs .tablist {
+      margin-bottom: 8px;
+    }
+    .container.is-tabs-layout .color-category {
+      margin-bottom: 16px;
+    }
+    .container.is-tabs-layout .color-group {
+      gap: 10px;
+      margin-bottom: 0;
+    }
+    /* Selection summary */
+    .selection-summary {
+      padding: 8px 20px;
+      background: #f8f9fa;
+      border-top: 1px solid #eee;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+      font-size: 13px;
+      color: #333;
+    }
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 8px;
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      background: #fff;
+      font-size: 12px;
+      color: #333;
+    }
   </style>
 </head>
 <body>
@@ -236,8 +333,12 @@
       <div class="color-title">
         <span class="colour-label">Colour</span> 
         <span id="colorName" class="selected-color-name">Red Merlot</span>
+  </div>
+
+      <div id="componentTabs" class="component-tabs">
+        <div id="componentTablist" class="tablist"></div>
       </div>
-      
+
       <div class="color-category">
         <div class="category-label">Dark</div>
         <div class="color-group" id="darkColors"></div>
@@ -257,17 +358,32 @@
     <div class="sort-buttons">
       <h3>Color Sorting Options</h3>
       <div class="button-group">
-        <button class="sort-btn active" data-sort="default">As-is</button>
-        <button class="sort-btn" data-sort="dark-to-light">1. Dark to Light</button>
-        <button class="sort-btn" data-sort="personal-color">2. Personal Color</button>
-        <button class="sort-btn" data-sort="color-tone">3. Color Tone</button>
-        <button class="sort-btn" data-sort="tone-saturation">4. Tone & Saturation</button>
-        <button class="sort-btn" data-sort="season">5. Season</button>
-        <button class="sort-btn" data-sort="bestseller-new">6. Bestseller vs New</button>
-        <button class="sort-btn" data-sort="styling-purpose">7. Styling Purpose</button>
-        <button class="sort-btn" data-sort="natural-motif">8. Natural Motif</button>
-        <button class="sort-btn" data-sort="mood">9. Mood</button>
+        <button type="button" class="sort-btn active" data-sort="default">As-is</button>
+        <button type="button" class="sort-btn" data-sort="dark-to-light">1. Dark to Light</button>
+        <button type="button" class="sort-btn" data-sort="personal-color">2. Personal Color</button>
+        <button type="button" class="sort-btn" data-sort="color-tone">3. Color Tone</button>
+        <button type="button" class="sort-btn" data-sort="tone-saturation">4. Tone & Saturation</button>
+        <button type="button" class="sort-btn" data-sort="season">5. Season</button>
+        <button type="button" class="sort-btn" data-sort="bestseller-new">6. Bestseller vs New</button>
+        <button type="button" class="sort-btn" data-sort="styling-purpose">7. Styling Purpose</button>
+        <button type="button" class="sort-btn" data-sort="natural-motif">8. Natural Motif</button>
+        <button type="button" class="sort-btn" data-sort="mood">9. Mood</button>
       </div>
+    </div>
+
+    <div class="layout-options">
+      <div class="sort-buttons layout-controls">
+        <h3>Layout Options</h3>
+        <div class="button-group">
+          <button type="button" class="sort-btn layout-btn active" data-layout="open">Open</button>
+          <button type="button" class="sort-btn layout-btn" data-layout="tabs">Tabs</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="selection-summary">
+      <span class="summary-chip" id="summarySort">Sort: As-is</span>
+      <span class="summary-chip" id="summaryLayout">Layout: Open</span>
     </div>
   </div>
 
@@ -675,6 +791,9 @@
     ];
 
     let currentSort = 'default';
+    let componentLayout = 'open';
+    let activeComponentTabIndex = 0;
+    let tabIndexBySort = {};
 
     // 자동으로 색상 속성 계산하는 함수들
     function normalizeHex(input) {
@@ -886,9 +1005,9 @@
       
       div.addEventListener("click", () => {
         if (!div.classList.contains('disabled')) {
-          document.querySelectorAll(".color-circle").forEach(c => c.classList.remove("selected"));
-          div.classList.add("selected");
-          document.getElementById("colorName").textContent = color.name;
+        document.querySelectorAll(".color-circle").forEach(c => c.classList.remove("selected"));
+        div.classList.add("selected");
+        document.getElementById("colorName").textContent = color.name;
         }
       });
       
@@ -942,8 +1061,13 @@
       document.getElementById("darkColors").innerHTML = '';
       document.getElementById("mediumColors").innerHTML = '';
       document.getElementById("lightColors").innerHTML = '';
+      const layoutOptionsEl = document.querySelector('.layout-options');
+      const containerEl = document.querySelector('.container');
       
       if (sortType === 'default') {
+        // Hide layout options for As-is
+        if (layoutOptionsEl) layoutOptionsEl.style.display = 'none';
+        if (containerEl) containerEl.classList.remove('is-tabs-layout');
         // Show all colors in one row without sections
         document.getElementById("mediumColors").style.display = 'none';
         document.getElementById("lightColors").style.display = 'none';
@@ -957,6 +1081,8 @@
         const darkContainer = document.getElementById("darkColors");
         darkContainer.classList.add('horizontal-scroll');
         darkContainer.style.marginBottom = '0';
+        // Ensure visible even if tabs previously hid it
+        darkContainer.style.display = 'flex';
         
         // Add all colors to dark section (which will be the only visible section)
         sortedColors.forEach(color => {
@@ -970,7 +1096,13 @@
           
           darkContainer.appendChild(colorCircle);
         });
+        // As-is: no tabs UI even in tabs layout
+        document.getElementById('componentTabs').style.display = 'none';
       } else {
+        // Show layout options for 1~9 and sync state
+        if (layoutOptionsEl) layoutOptionsEl.style.display = 'block';
+        applyTabsLayoutClass();
+        updateLayoutButtons(componentLayout);
         // Show all categories for other sort types
         document.getElementById("mediumColors").style.display = 'flex';
         document.getElementById("lightColors").style.display = 'flex';
@@ -1051,14 +1183,36 @@
         category3.forEach(color => {
           document.getElementById("lightColors").appendChild(createColorCircle(color));
         });
+        // If tabs layout, build tabs and show only selected category
+        if (componentLayout === 'tabs') {
+          let tabLabels = [];
+          // restore last tab index for this sort if available
+          const saved = tabIndexBySort[sortType];
+          activeComponentTabIndex = typeof saved === 'number' ? saved : 0;
+          if (sortType === 'dark-to-light') tabLabels = ['Dark', 'Medium', 'Light'];
+          else if (sortType === 'personal-color') tabLabels = ['Warm Tone', 'Cool Tone', 'Neutral Tone'];
+          else if (sortType === 'color-tone') tabLabels = ['Bright', 'Pastel', 'Natural'];
+          else if (sortType === 'tone-saturation') tabLabels = ['Light Tone', 'Middle Tone', 'Deep Tone'];
+          else if (sortType === 'season') tabLabels = ['Spring/Summer', 'Fall/Winter', 'All Season'];
+          else if (sortType === 'bestseller-new') tabLabels = ['Steady Seller', 'New Season', 'Limited Edition'];
+          else if (sortType === 'styling-purpose') tabLabels = ['Base Color', 'Point Color', 'Mix & Match'];
+          else if (sortType === 'natural-motif') tabLabels = ['Earthy', 'Ocean', 'Flora'];
+          else if (sortType === 'mood') tabLabels = ['Energetic', 'Calm & Reset', 'Premium & Luxury'];
+          buildComponentTabs(tabLabels);
+          updateComponentTabsVisibility();
+        } else {
+          document.getElementById('componentTabs').style.display = 'none';
+        }
       }
     }
 
     function updateButtonStates(activeSort) {
-      document.querySelectorAll('.sort-btn').forEach(btn => {
+      document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
         btn.classList.remove('active');
       });
-      document.querySelector(`[data-sort="${activeSort}"]`).classList.add('active');
+      document.querySelectorAll(`.sort-btn[data-sort="${activeSort}"]`).forEach(btn => {
+        btn.classList.add('active');
+      });
     }
 
     function resetCategoryLabels() {
@@ -1068,14 +1222,64 @@
       labels[2].textContent = 'Light';
     }
 
+    function buildComponentTabs(tabLabels) {
+      const tabs = document.getElementById('componentTabs');
+      const tablist = document.getElementById('componentTablist');
+      if (!tabs || !tablist) return;
+      tablist.innerHTML = '';
+      activeComponentTabIndex = Math.min(activeComponentTabIndex, Math.max(0, tabLabels.length - 1));
+      tabLabels.forEach((label, index) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'component-tab-btn' + (index === activeComponentTabIndex ? ' active' : '');
+        btn.textContent = label;
+        btn.addEventListener('click', () => {
+          activeComponentTabIndex = index;
+          tabIndexBySort[currentSort] = index;
+          updateComponentTabsVisibility();
+        });
+        tablist.appendChild(btn);
+      });
+      tabs.style.display = 'block';
+      // hide inline category labels in tabs mode
+      document.querySelectorAll('.category-label').forEach(label => {
+        label.style.display = 'none';
+      });
+    }
+
+    function updateComponentTabsVisibility() {
+      const btns = document.querySelectorAll('.component-tab-btn');
+      btns.forEach((b, i) => b.classList.toggle('active', i === activeComponentTabIndex));
+      const groups = [
+        document.getElementById('darkColors'),
+        document.getElementById('mediumColors'),
+        document.getElementById('lightColors')
+      ];
+      groups.forEach((g, i) => {
+        if (!g) return;
+        g.classList.remove('horizontal-scroll');
+        g.style.display = (i === activeComponentTabIndex ? 'flex' : 'none');
+      });
+    }
+
+    function applyTabsLayoutClass() {
+      const container = document.querySelector('.container');
+      if (!container) return;
+      container.classList.toggle('is-tabs-layout', componentLayout === 'tabs');
+    }
+
     // Initialize
     renderColors('default');
 
-    // Add event listeners to sort buttons
-    document.querySelectorAll('.sort-btn').forEach(btn => {
+    // Add event listeners to sort buttons (only those with data-sort)
+    document.querySelectorAll('.sort-btn[data-sort]').forEach(btn => {
       btn.addEventListener('click', () => {
         const sortType = btn.getAttribute('data-sort');
         currentSort = sortType;
+        if (componentLayout === 'tabs') {
+          const saved = tabIndexBySort[sortType];
+          activeComponentTabIndex = typeof saved === 'number' ? saved : 0;
+        }
         
         updateButtonStates(sortType);
         
@@ -1086,6 +1290,58 @@
         renderColors(sortType);
       });
     });
+
+    // Layout mode toggle (buttons)
+    function updateLayoutButtons(layout) {
+      document.querySelectorAll('.layout-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-layout') === layout);
+      });
+    }
+    document.querySelectorAll('.layout-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const layout = btn.getAttribute('data-layout');
+        if (!layout || layout === componentLayout) return;
+        componentLayout = layout;
+        if (componentLayout === 'tabs') {
+          const saved = tabIndexBySort[currentSort];
+          activeComponentTabIndex = typeof saved === 'number' ? saved : 0;
+        }
+        updateLayoutButtons(componentLayout);
+        applyTabsLayoutClass();
+        renderColors(currentSort);
+        // Re-apply sort active state to avoid any visual reset
+        updateButtonStates(currentSort);
+        updateSelectionSummary();
+      });
+    });
+    // initialize layout buttons
+    updateLayoutButtons(componentLayout);
+    applyTabsLayoutClass();
+    updateSelectionSummary();
+
+    // Selection summary helpers
+    function getSortLabel(sortType) {
+      switch (sortType) {
+        case 'default': return 'As-is';
+        case 'dark-to-light': return '1. Dark to Light';
+        case 'personal-color': return '2. Personal Color';
+        case 'color-tone': return '3. Color Tone';
+        case 'tone-saturation': return '4. Tone & Saturation';
+        case 'season': return '5. Season';
+        case 'bestseller-new': return '6. Bestseller vs New';
+        case 'styling-purpose': return '7. Styling Purpose';
+        case 'natural-motif': return '8. Natural Motif';
+        case 'mood': return '9. Mood';
+        default: return 'As-is';
+      }
+    }
+    function getLayoutLabel(layout) { return layout === 'tabs' ? 'Tabs' : 'Open'; }
+    function updateSelectionSummary() {
+      const sortEl = document.getElementById('summarySort');
+      const layoutEl = document.getElementById('summaryLayout');
+      if (sortEl) sortEl.textContent = `Sort: ${getSortLabel(currentSort)}`;
+      if (layoutEl) layoutEl.textContent = `Layout: ${getLayoutLabel(componentLayout)}`;
+    }
   </script>
 </body>
 </html>
